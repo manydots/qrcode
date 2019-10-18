@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<%- include('./header')%>
+    <title><%= title %></title>
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+    <script src="/public/js-extend.js"></script>
+</head>
+<body>
+	<%- include('./top')%>
+	<div class="qrcode-container">
+		<div class="qrcode-content">
+			<input class="qrcode" name="text" style="border: none;" placeholder="请输入转换的链接" />
+		</div>
+		<div class="qrcode-created w990 tac">
+			<div class="button created-post tac cursor" data-type="post">生成二维码</div>
+			<div class="button created-get tac cursor" data-type="get">get生成二维码</div>
+		</div>
+	   	
+	   	<div class="qrcode-image-box rect ">
+	   		<div class="qrcode-image-wrap tac">
+	   			<img src="" alt="">
+	   		</div>
+	   		<span class="tips">此处生成二维码</span>
+	   	</div>
+		
+		<div class="qrcode-other w990">
+				<pre>
+/**
+ * @function debounce(fn, delay, immediate)
+ * @desc  函数防抖---“立即执行版本” 和 “非立即执行版本” 的组合版本
+ * @param  fn 需要执行的函数
+ * @param  delay 延迟执行时间（毫秒）
+ * @param  immediate---true 表立即执行[触发事件后函数不会立即执行，而是在 n 秒后执行，如果在 n 秒内又触发了事件，则会重新计算函数执行时间]，
+ *                     false 表非立即执行[触发事件后函数会立即执行，然后 n 秒内不触发事件才能继续执行函数的效果]
+ **/
+				</pre>
+		</div>
+	</div>
+   	<%- include('./footer')%>
+</body>
+	<script type="text/javascript">
+  		$(function() {
+
+			$.each($('.qrcode-container .qrcode-created .button'), function(k, v) {
+				/**
+				 * @desc  函数防抖---“立即执行版本” 和 “非立即执行版本” 的组合版本
+				 * @param  fn 需要执行的函数
+				 * @param  delay 延迟执行时间（毫秒）
+				 * @param  immediate---true 表立即执行[触发事件后函数不会立即执行，而是在n秒后执行，如果在n秒内又触发了事件，则会重新计算函数执行时间]，
+				 *         false 表非立即执行[触发事件后函数会立即执行，然后n秒内不触发事件才能继续执行函数的效果]
+				 **/
+				$(v).on('click',debounce(function(e) {
+					e.preventDefault();
+					var params = {
+						qrUrl: $('.qrcode').val(),
+						margin: 5,
+						size: 189,
+						type: 'base64'
+					};
+					var type = $(this).attr('data-type');
+					if (type == 'post') {
+						$.ajax({
+							type: 'post',
+							url: '/qr',
+							data: params,
+							success: function(res) {
+								if (res && res.code == 0) {
+									$('.qrcode-content').removeClass('border-red');
+									$('.qrcode-image-box .qrcode-image-wrap img').attr('src', res.msg);
+									$('.qrcode-image-box .tips').hide();
+									$('.qrcode-content .qrcode').attr('placeholder', '请输入转换的链接');
+								} else {
+									$('.qrcode-content').addClass('border-red');
+									$('.qrcode-image-box .qrcode-image-wrap img').attr('src', '');
+									$('.qrcode-content .qrcode').attr('placeholder', res.msg);
+									$('.qrcode-image-box .tips').show();
+								}
+							}
+						});
+					} else {
+						clickOpen('/qrGet?qrUrl='+params.qrUrl);
+					}
+				},400,true))
+
+			});
+		});
+  	</script>
+</html>

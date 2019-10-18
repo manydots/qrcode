@@ -1,0 +1,15 @@
+# Logs
+logs
+*.log
+.DS_Store
+node_modules/
+npm-debug.log
+dist
+/build
+package-lock.json
+# IDE/Editor data
+.idea
+#docz cache && app
+.docz
+#git
+.git
