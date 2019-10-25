@@ -225,7 +225,7 @@ input:-webkit-autofill {
 
 .qrcode-uploadImage .files-wraper .uploadImage{
 	display: block;
-	opacity: 0;
+	visibility: hidden;
 	width:100px;
 	height: 40px;
 	position: absolute;
