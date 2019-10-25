@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<%- include('./header')%>
+    <title><%= title %></title>
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<body>
+	<%- include('./top')%>
+   	<div class="qrcode-uploadImage w990">
+   		<div class="files-wraper fl">
+   			<span class="files-txt">选择文件</span>
+   			<input type="file" class="uploadImage cursor" name="uploadImage" />
+   		</div>
+    	<div class="uploads cursor fl ml15">点击上传</div>
+   	</div>
+    <%- include('./footer')%>
+</body>
+<script type="text/javascript">
+	$(function(){
+		
+		function upload(){
+			var formData = new FormData(); //创建一个forData 
+    		formData.append('uploadImage', $('.uploadImage')[0].files[0]); //把file添加进去  name命名为img
+    		console.log(formData.get("uploadImage"));
+			$.ajax({
+				type: 'post',
+				url: '/uploads',
+				data: formData,
+				cache:false,         //不设置缓存
+		        processData: false,  // 不处理数据
+		        contentType: false,  // 不设置内容类型
+				success: function(res) {
+					console.log(res)
+					alert(res.msg)
+				}
+			})
+		}
+		$('.uploads').on('click',function(){
+			upload()
+		})
+	})
+</script>
+</html>

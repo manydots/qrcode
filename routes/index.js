@@ -1,6 +1,8 @@
 const Router = require('koa-router');
 const QrCode = require('qr-image');
 const Tools = require('../utils/index');
+const path = require('path');
+const fs = require('fs');
 
 const canVisit = [{
 	path: '/',
@@ -19,6 +21,12 @@ const canVisit = [{
 	pageType: 'qrcode',
 	title: '二维码生成',
 	source: 'qrcode',
+	isCheck: true
+}, {
+	path: '/upload',
+	pageType: 'upload',
+	title: '文件上传',
+	source: 'upload',
 	isCheck: true
 }];
 // 所有路由匹配
@@ -82,6 +90,7 @@ router.get('*', async ctx => {
 	}
 });
 
+
 router.post('/qr', async (ctx, next) => {
 	const data = ctx.request.body;
 	//console.log(ctx.query);
@@ -93,15 +102,9 @@ router.post('/qr', async (ctx, next) => {
 	// 白色外边距，输入时为了保证精确性，请确保为5的公倍数，否则按四舍五入处理.
 	// 如果为空,默认为2,即尺寸为10
 	var margin = Math.round(data.margin / 10) || 2;
-
-
-
 	if (!Tools.IsURL(data.qrUrl)) {
 		ctx.body = Tools.Codes(-1, 'qrcode_created_error', '传入url不规范');
 	} else {
-
-
-
 		// 如果有type参数,返回base64
 		if (data.type) {
 			var codeStr = QrCode.imageSync(data.qrUrl, {
@@ -126,7 +129,54 @@ router.post('/qr', async (ctx, next) => {
 			//ctx.body = Tools.Codes(0, 'qrcode_created_success', code.pipe(ctx.res));
 		}
 	}
+});
 
+
+
+//注：uploadImage是从前端输入框的name属性里获取的
+router.post('/uploads', async (ctx, next) => {
+	//console.log('/uploads')
+	// 上传单个文件
+	let file = ctx.request.files.uploadImage;
+	if (!file) {
+		ctx.body = Tools.Codes(-2, 'files_is_empty', '文件为空');
+		return;
+	}
+	console.log(`文件名:${file.name},文件大小:${parseInt(file.size/1024)}k,文件类型:${file.type}`);
+	//console.log(Tools.uploadFilesCheck(file.type, file.size));
+
+	if (Tools.uploadFilesCheck(file.type, file.size).typeError == true) {
+		ctx.body = Tools.Codes(-3, 'files_types_error', '文件类型不支持');
+		return;
+	} else {
+		if (Tools.uploadFilesCheck(file.type, file.size).sizeError == true) {
+			ctx.body = Tools.Codes(-3, 'files_sizes_error', '文件过大5M以下');
+			return;
+		}
+	};
+	console.log(file.path)
+	// 创建可读流
+	const render = fs.createReadStream(file.path);
+	const fileDir = 'public/uploads';
+	const ext = file.name.split('.').pop(); // 获取上传文件扩展名
+	const filename = 'TestUp';//file.name.split('.').shift()
+	let filePath = fileDir +'/'+ filename + '.' + ext;
+ 				
+	if (!fs.existsSync(fileDir)) {
+		fs.mkdirSync(fileDir, err => {
+			console.log(err)
+			console.log('创建失败')
+		});
+		ctx.body = Tools.Codes(-1, 'upload_error', '上传失败');
+		return;
+	} else {
+
+		// 创建写入流
+		const upStream = fs.createWriteStream(filePath);
+		render.pipe(upStream);
+		ctx.body = Tools.Codes(0, 'upload_success', '上传成功');
+		return
+	}
 
 
 });

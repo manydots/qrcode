@@ -135,6 +135,48 @@ function clickOpen(href, target) {
     }
 }
 
+const uploadLimit = {
+    size: 1024 * 1024 * 5, //1M*50[1024 * 1024 * 50]
+    types: [{
+        type: 'application/*',
+        smallType: ['vnd.ms-excel']//'octet-stream' 其他类型文件eg:*.war
+    }, {
+        type: 'image/*',
+        smallType: ['jpg', 'jpeg', 'png']
+    }, {
+        type: 'text/*',
+        smallType: ['plain']
+    }, {
+        type: 'audio/*',
+        smallType: ['mp3']
+    }]
+}
+
+function uploadFilesCheck(type, size) {
+    let sizeError = true,
+        typeError = true;
+
+    if (type && size && size != '') {
+        for (let item of uploadLimit.types) {
+            if (type.split('/').shift() == item.type.split('/').shift()) {
+                if (item.smallType.indexOf(type.split('/').pop()) > -1) {
+                    typeError = false;
+                    if (size <= uploadLimit.size) {
+                        sizeError = false;
+                        break;
+                    }
+                }
+            }
+
+        }
+    }
+    //console.log(canUpload);
+    return {
+        sizeError: sizeError,
+        typeError: typeError
+    };
+}
+
 module.exports = {
     debounce: debounce,
     isLocal: isLocal,
@@ -142,5 +184,6 @@ module.exports = {
     checkLogin: checkLogin,
     IsURL: IsURL,
     Codes: Codes,
-    clickOpen:clickOpen
+    clickOpen: clickOpen,
+    uploadFilesCheck: uploadFilesCheck
 };

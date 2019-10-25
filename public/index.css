@@ -9,6 +9,20 @@
 input:-webkit-autofill {
 	box-shadow: 0 0 0px 1000px white inset !important;
 }
+.tac {
+	text-align: center;
+}
+
+.cursor {
+	cursor: pointer;
+}
+
+.fl{
+	float: left;
+}
+.ml15{
+	margin-left: 15px;
+}
 
 .qrcode-top {
 	width: 100%;
@@ -27,6 +41,11 @@ input:-webkit-autofill {
 	color: #666;
 	letter-spacing: 1px;
 }
+.qrcode-top .qrcode-top-content .BackTo{
+	display: inline-block;
+	color:pink;
+	margin-left: 15px;
+}
 
 .qrcode-container {
 	width: 990px;
@@ -35,13 +54,7 @@ input:-webkit-autofill {
 	overflow: hidden;
 }
 
-.tac {
-	text-align: center;
-}
 
-.cursor {
-	cursor: pointer;
-}
 
 .qrcode-container .qrcode-content {
 	overflow: hidden;
@@ -190,4 +203,57 @@ input:-webkit-autofill {
 .qrcode-other{
 	color: #999;
 	margin: 80px auto 30px auto;
+}
+
+
+.qrcode-uploadImage{
+	padding: 150px 0;
+	overflow: hidden;
+}
+
+.qrcode-uploadImage .files-wraper{
+
+	width:100px;
+	overflow: hidden;
+	height: 40px;
+	position: relative;
+	background: #fff;
+	border:1px solid #666;
+	border-radius: 5px;
+	z-index: 5;
+}
+
+.qrcode-uploadImage .files-wraper .uploadImage{
+	display: block;
+	opacity: 0;
+	width:100px;
+	height: 40px;
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 10;
+}
+.qrcode-uploadImage .files-wraper .files-txt{
+	position: relative;
+	z-index: 4;
+	text-align: center;
+	display: block;
+	width:100%;
+	color:#666;
+	height: 40px;
+	line-height: 40px;
+}
+.uploads{
+
+	width:100px;
+	overflow: hidden;
+	height: 40px;
+	position: relative;
+	background: #fff;
+	border:1px solid #666;
+	border-radius: 5px;
+	z-index: 5;
+	text-align: center;
+	line-height: 40px;
+	color:#666;
 }

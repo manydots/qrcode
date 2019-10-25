@@ -4,6 +4,7 @@ const bodyparser = require('koa-bodyparser');
 const path = require('path');
 const views = require('koa-views');
 const static = require('koa-static');
+const koaBody = require('koa-body');
 const router = require('./routes/index');
 var serverName = process.env.NAME || 'Unknown';
 var port = process.env.port || 3031;
@@ -18,6 +19,14 @@ app.use(static(__dirname, './public'));
 app.use(views(path.join(__dirname, './views'), {
 	extension: 'ejs'
 }));
+
+app.use(koaBody({
+	multipart: true,
+	formidable: {
+		maxFieldsSize: 100 * 1024 * 1024,
+		multipart: true
+	}
+}))
 
 // 加载路由中间件
 app.use(router.routes());

@@ -13,3 +13,4 @@ package-lock.json
 .docz
 #git
 .git
+public/uploads/

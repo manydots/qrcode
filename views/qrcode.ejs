@@ -41,7 +41,19 @@
 </body>
 	<script type="text/javascript">
   		$(function() {
-
+  			var Colors = getColor();
+  				$('.rect').css({
+  					color:Colors
+  				})
+  				
+  			// setInterval(function(){
+  			// 	var Colors = getColor();
+  			// 	$('.rect').css({
+  			// 		color:Colors
+  			// 	})
+  			// },4000*5)
+  			//console.log(Colors)
+  			
 			$.each($('.qrcode-container .qrcode-created .button'), function(k, v) {
 				/**
 				 * @desc  函数防抖---“立即执行版本” 和 “非立即执行版本” 的组合版本
@@ -50,6 +62,7 @@
 				 * @param  immediate---true 表立即执行[触发事件后函数不会立即执行，而是在n秒后执行，如果在n秒内又触发了事件，则会重新计算函数执行时间]，
 				 *         false 表非立即执行[触发事件后函数会立即执行，然后n秒内不触发事件才能继续执行函数的效果]
 				 **/
+
 				$(v).on('click',debounce(function(e) {
 					e.preventDefault();
 					var params = {
