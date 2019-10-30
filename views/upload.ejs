@@ -8,47 +8,58 @@
 </head>
 <body>
 	<%- include('./top')%>
+	<%- include('./nav')%>
    	<div class="qrcode-uploadImage w990">
    		<div class="files-wraper fl">
    			<span class="files-txt cursor">选择文件</span>
    			<input type="file" class="uploadImage cursor" name="uploadImage" />
    		</div>
-    	<div class="uploads cursor fl ml15">点击上传</div>
+    	<div class="uploads cursor fl ml15" style="display: none;">点击上传</div>
    	</div>
     <%- include('./footer')%>
 </body>
 <script type="text/javascript">
-	$(function(){
-		
-		$('.files-txt').on('click',debounce(function(){
-			$('.uploadImage').click();
-		},400,true))
-		function upload(){
-    		//console.log($('.uploadImage')[0].files[0])
-    		if(!$('.uploadImage')[0].files[0]){
-    			alert('选择文件');
-    			return;
-    		}
-    		var formData = new FormData(); //创建一个forData 
-    		formData.append('uploadImage', $('.uploadImage')[0].files[0]); //把file添加进去  name命名为img
-    		console.log(formData.get("uploadImage"));
-			$.ajax({
-				type: 'post',
-				url: '/uploads',
-				data: formData,
-				cache:false,         //不设置缓存
-		        processData: false,  // 不处理数据
-		        contentType: false,  // 不设置内容类型
-				success: function(res) {
-					$('.uploadImage').val('');	
-					console.log(res)
-					alert(res.msg)
-				}
-			})
-		}
-		$('.uploads').on('click',debounce(function(){
-			upload();
-		},400,true))
-	})
+		$(function () {
+
+		    function handleClick(source,type) {
+		        window.open('/download/'+source,type);
+		    }
+		    $('.downloads').on('click', function () {
+		    	var source = $(this).attr('data-downloads');
+		        handleClick(source,'_self');
+		    })
+
+		    $('.files-txt').on('click', debounce(function () {
+		        $('.uploadImage').click();
+		        $('.uploads').show();
+		    }, 400, true))
+
+		    function upload() {
+		        //console.log($('.uploadImage')[0].files[0])
+		        if (!$('.uploadImage')[0].files[0]) {
+		            alert('选择文件');
+		            return;
+		        }
+		        var formData = new FormData(); //创建一个forData 
+		        formData.append('uploadImage', $('.uploadImage')[0].files[0]); //把file添加进去  name命名为img
+		        console.log(formData.get("uploadImage"));
+		        $.ajax({
+		            type: 'post',
+		            url: '/uploads',
+		            data: formData,
+		            cache: false, //不设置缓存
+		            processData: false, // 不处理数据
+		            contentType: false, // 不设置内容类型
+		            success: function (res) {
+		                $('.uploadImage').val('');
+		                console.log(res)
+		                alert(res.msg)
+		            }
+		        })
+		    }
+		    $('.uploads').on('click', debounce(function () {
+		        upload();
+		    }, 400, true))
+		})
 </script>
 </html>

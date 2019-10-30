@@ -1,6 +1,6 @@
 var Koa = require('koa');
 var app = new Koa();
-const bodyparser = require('koa-bodyparser');
+//const bodyparser = require('koa-bodyparser');
 const path = require('path');
 const views = require('koa-views');
 const static = require('koa-static');
@@ -10,9 +10,10 @@ var serverName = process.env.NAME || 'Unknown';
 var port = process.env.port || 3031;
 var url = `http://127.0.0.1:${port}`;
 
-app.use(bodyparser({
-	enableTypes: ['json', 'form', 'text']
-}));
+// app.use(bodyparser({
+// 	enableTypes: ['json', 'form', 'text']
+// }));
+
 app.use(static(__dirname, './public'));
 
 // 加载模板引擎,文件会自动拼接此后缀

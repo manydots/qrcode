@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<%- include('./header')%>
+    <title><%= title %></title>
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+</head>
+<body>
+</body>
+	<script type="text/javascript">
+
+					var params = {
+						qrUrl: 'https://github.com',
+						margin: 5,
+						size: 189,
+						type: 'base64'
+					};
+					$.ajax({
+						type: 'post',
+						url: '/qrc',
+						data: params,
+						success: function(res) {
+							console.log(res)
+						}
+					})
+		
+  	</script>
+</html>

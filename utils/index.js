@@ -176,7 +176,28 @@ function uploadFilesCheck(type, size) {
         typeError: typeError
     };
 }
+function checkPath(ctx, notNeedDeal) {
+    let notNeed = false;
+    for (let item of notNeedDeal) {
+        if (item.type == 'startsWith') {
+            for (let v of item.path.split(',')) {
+                if (ctx.url.startsWith(v)) {
+                    notNeed = true;
+                    break;
+                }
+            }
 
+        } else if (item.type == 'endsWith') {
+            for (let v of item.path.split(',')) {
+                if (ctx.url.endsWith(v)) {
+                    notNeed = true;
+                    break;
+                }
+            }
+        }
+    }
+    return notNeed;
+}
 module.exports = {
     debounce: debounce,
     isLocal: isLocal,
@@ -185,5 +206,6 @@ module.exports = {
     IsURL: IsURL,
     Codes: Codes,
     clickOpen: clickOpen,
-    uploadFilesCheck: uploadFilesCheck
+    uploadFilesCheck: uploadFilesCheck,
+    checkPath:checkPath
 };

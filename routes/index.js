@@ -1,5 +1,6 @@
 const Router = require('koa-router');
 const QrCode = require('qr-image');
+const send = require('koa-send');
 const Tools = require('../utils/index');
 const path = require('path');
 const fs = require('fs');
@@ -28,19 +29,41 @@ const canVisit = [{
 	title: '文件上传',
 	source: 'upload',
 	isCheck: true
+}, {
+	path: '/ts',
+	pageType: 'ts',
+	title: '测试页面',
+	source: 'ts',
+	isCheck: true
 }];
-// 所有路由匹配
+
+const notNeedDeal = [{
+	path: '/public,/test',
+	type: 'startsWith'
+}, {
+	path: '.js,.js.map,.ico,.ico,.png',
+	type: 'endsWith'
+}]
+
+// 所有路由匹配,特殊路由放前
 let router = new Router();
+router.get('/download/:name', async (ctx) => {
+	const name = ctx.params.name;
+	console.log(`下载文件：${name}`);
+	const path = `public/uploads/${name}`;
+	//{ root: __dirname + '/public' }
+	//console.log(ctx.path)
+	ctx.attachment(path);
+	await send(ctx, path);
+})
+
 router.get('*', async ctx => {
 	let canLoad = true;
-	if (ctx.url.startsWith('/public') || ctx.url.endsWith('.js') || ctx.url.endsWith('.js.map') || ctx.url.endsWith('.ico') || ctx.url.endsWith('.png')) {
-
-	} else {
-		console.log('当前访问的路由:', ctx.url)
+	if (!Tools.checkPath(ctx, notNeedDeal)) {
+		//需要处理的路由
 		for (let item of canVisit) {
-			//console.log(item)
-			if (ctx.url.startsWith('/qrGet')) {
-				console.log(ctx.query.qrUrl);
+			if (ctx.url.startsWith('/qrGet') && item.isCheck == true) {
+				//console.log(ctx.query.qrUrl);
 				if (!ctx.query.qrUrl || ctx.query.qrUrl == '') {
 					ctx.body = Tools.Codes(-1, 'qrcode_created_error', '缺少url参数');
 					break;
@@ -66,7 +89,7 @@ router.get('*', async ctx => {
 				}
 
 			} else {
-				if (ctx.url == item.path) {
+				if (ctx.url == item.path && item.isCheck == true) {
 					await ctx.render(item.pageType, {
 						title: item.title,
 						pageType: item.source,
@@ -78,22 +101,28 @@ router.get('*', async ctx => {
 					canLoad = false;
 				}
 			}
-
 		}
+
+
 		if (!canLoad) {
 			await ctx.render('error', {
 				title: '当前访问的资源不存在:Not Found',
 				pageType: 'index'
 			});
-			console.log("this's sourse * Not Found", canLoad)
+			console.log("this's sourse * Not Found ", ctx.url)
+		} else {
+			console.log('当前访问的路由:', ctx.url);
 		}
+
 	}
 });
 
-
+router.post('/qrc', async (ctx, next) => {
+	console.log('test-api/qrc');
+	ctx.body = 'qrc'
+})
 router.post('/qr', async (ctx, next) => {
 	const data = ctx.request.body;
-	//console.log(ctx.query);
 	//console.log(ctx.res)
 	// 二维码尺寸，输入时为了保证精确性，请确保为21的公倍数，否则按四舍五入处理.
 	// 如果为空,默认为5,即尺寸为105*105
@@ -135,50 +164,54 @@ router.post('/qr', async (ctx, next) => {
 
 //注：uploadImage是从前端输入框的name属性里获取的
 router.post('/uploads', async (ctx, next) => {
-	//console.log('/uploads')
-	// 上传单个文件
-	let file = ctx.request.files.uploadImage;
-	if (!file) {
-		ctx.body = Tools.Codes(-2, 'files_is_empty', '文件为空');
-		return;
-	}
-	console.log(`文件名:${file.name},文件大小:${parseInt(file.size/1024)}k,文件类型:${file.type}`);
-	//console.log(Tools.uploadFilesCheck(file.type, file.size));
-
-	if (Tools.uploadFilesCheck(file.type, file.size).typeError == true) {
-		ctx.body = Tools.Codes(-3, 'files_types_error', '文件类型不支持');
-		return;
-	} else {
-		if (Tools.uploadFilesCheck(file.type, file.size).sizeError == true) {
-			ctx.body = Tools.Codes(-3, 'files_sizes_error', '文件过大5M以下');
+	//console.log(ctx.request)
+	try {
+		// 上传单个文件
+		if (!ctx.request.files || !ctx.request.files.uploadImage) {
+			ctx.body = Tools.Codes(-2, 'files_is_empty', '文件为空');
 			return;
 		}
-	};
-	console.log(file.path)
-	// 创建可读流
-	const render = fs.createReadStream(file.path);
-	const fileDir = 'public/uploads';
-	const ext = file.name.split('.').pop(); // 获取上传文件扩展名
-	const filename = 'TestUp';//file.name.split('.').shift()
-	let filePath = fileDir +'/'+ filename + '.' + ext;
- 				
-	if (!fs.existsSync(fileDir)) {
-		fs.mkdirSync(fileDir, err => {
-			console.log(err)
-			console.log('创建失败')
-		});
-		ctx.body = Tools.Codes(-1, 'upload_error', '上传失败');
-		return;
-	} else {
+		let file = ctx.request.files.uploadImage;
+		console.log(`文件名:${file.name},文件大小:${parseInt(file.size/1024)}k,文件类型:${file.type}`);
+		//console.log(Tools.uploadFilesCheck(file.type, file.size));
 
-		// 创建写入流
-		const upStream = fs.createWriteStream(filePath);
-		render.pipe(upStream);
-		ctx.body = Tools.Codes(0, 'upload_success', '上传成功');
-		return
+		if (Tools.uploadFilesCheck(file.type, file.size).typeError == true) {
+			ctx.body = Tools.Codes(-3, 'files_types_error', '文件类型不支持');
+			return;
+		} else {
+			if (Tools.uploadFilesCheck(file.type, file.size).sizeError == true) {
+				ctx.body = Tools.Codes(-3, 'files_sizes_error', '文件过大5M以下');
+				return;
+			}
+		};
+		console.log(file.path)
+		// 创建可读流
+		const render = fs.createReadStream(file.path);
+		const fileDir = 'public/uploads';
+		const ext = file.name.split('.').pop(); // 获取上传文件扩展名
+		const filename = 'TestUp'; //file.name.split('.').shift()
+		let filePath = fileDir + '/' + filename + '.' + ext;
+
+		if (!fs.existsSync(fileDir)) {
+			fs.mkdirSync(fileDir, err => {
+				console.log(err)
+				console.log('创建失败')
+			});
+			ctx.body = Tools.Codes(-1, 'upload_error', '上传失败');
+			return;
+		} else {
+
+			// 创建写入流
+			const upStream = fs.createWriteStream(filePath);
+			render.pipe(upStream);
+			ctx.body = Tools.Codes(0, 'upload_success', '上传成功');
+			return
+		}
+	} catch (err) {
+		console.log(err)
 	}
 
-
 });
+
 
 module.exports = router;
