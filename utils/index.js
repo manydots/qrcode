@@ -205,9 +205,9 @@ function findSync(startPath, flag) {
             //console.log(startPath+'\\'+val)
             //console.log(fs.statSync(startPath+'\\'+val))
             result.push({
-                ctime: fs.statSync(startPath + '\\' + val).ctime,
+                ctime: fs.statSync(startPath + '/' + val).ctime,
                 filename: val,
-                path: startPath + '\\' + val
+                path: startPath + '/' + val
             })
         });
     }
