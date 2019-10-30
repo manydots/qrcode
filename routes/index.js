@@ -30,10 +30,10 @@ const canVisit = [{
 	source: 'upload',
 	isCheck: true
 }, {
-	path: '/ts',
-	pageType: 'ts',
-	title: '测试页面',
-	source: 'ts',
+	path: '/download',
+	pageType: 'download',
+	title: '下载文件',
+	source: 'download',
 	isCheck: true
 }];
 
@@ -45,9 +45,14 @@ const notNeedDeal = [{
 	type: 'endsWith'
 }]
 
+//相邻目录下
+const sourcePath = path.resolve(__dirname, '../public/uploads');
+//console.log(path.basename(Tools.findSync(nl)[0]))
+
 // 所有路由匹配,特殊路由放前
 let router = new Router();
 router.get('/download/:name', async (ctx) => {
+	let ip = Tools.getClientIp(ctx, 'nginx');
 	const name = ctx.params.name;
 	console.log(`下载文件：${name}`);
 	const path = `public/uploads/${name}`;
@@ -88,6 +93,19 @@ router.get('*', async ctx => {
 
 				}
 
+			} else if (ctx.url.startsWith('/download') && item.isCheck == true) {
+				//const allFiles = fs.readdirSync(sourcePath);
+				const allFiles = Tools.findSync(sourcePath, true);
+				//var stat = fs.statSync(sourcePath);
+
+				//传递fmt函数到ejs模板
+				await ctx.render('download', {
+					title: '文件下载',
+					pageType: 'download',
+					files: allFiles,
+					fmt: Tools.formatDate
+				});
+				break;
 			} else {
 				if (ctx.url == item.path && item.isCheck == true) {
 					await ctx.render(item.pageType, {
@@ -103,7 +121,7 @@ router.get('*', async ctx => {
 			}
 		}
 
-
+		let ip = Tools.getClientIp(ctx, 'nginx');
 		if (!canLoad) {
 			await ctx.render('error', {
 				title: '当前访问的资源不存在:Not Found',
@@ -117,11 +135,8 @@ router.get('*', async ctx => {
 	}
 });
 
-router.post('/qrc', async (ctx, next) => {
-	console.log('test-api/qrc');
-	ctx.body = 'qrc'
-})
 router.post('/qr', async (ctx, next) => {
+	let ip = Tools.getClientIp(ctx, 'nginx');
 	const data = ctx.request.body;
 	//console.log(ctx.res)
 	// 二维码尺寸，输入时为了保证精确性，请确保为21的公倍数，否则按四舍五入处理.
@@ -165,6 +180,7 @@ router.post('/qr', async (ctx, next) => {
 //注：uploadImage是从前端输入框的name属性里获取的
 router.post('/uploads', async (ctx, next) => {
 	//console.log(ctx.request)
+	let ip = Tools.getClientIp(ctx, 'nginx');
 	try {
 		// 上传单个文件
 		if (!ctx.request.files || !ctx.request.files.uploadImage) {
@@ -212,6 +228,5 @@ router.post('/uploads', async (ctx, next) => {
 	}
 
 });
-
 
 module.exports = router;

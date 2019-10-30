@@ -10,6 +10,7 @@ var serverName = process.env.NAME || 'Unknown';
 var port = process.env.port || 3031;
 var url = `http://127.0.0.1:${port}`;
 
+app.proxy = true;
 // app.use(bodyparser({
 // 	enableTypes: ['json', 'form', 'text']
 // }));
@@ -21,6 +22,7 @@ app.use(views(path.join(__dirname, './views'), {
 	extension: 'ejs'
 }));
 
+//上传文件
 app.use(koaBody({
 	multipart: true,
 	formidable: {

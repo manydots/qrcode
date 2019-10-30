@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<%- include('./header')%>
+    <title><%= title %></title>
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.min.js"></script>
+    <script src="/public/js-extend.js"></script>
+</head>
+<body>
+	<%- include('./top')%>
+	<%- include('./nav')%>
+	<div class="qrcode-files-list w990 mb10">
+	<% if (files.length) { %>
+        <ul class="qrcode-files-list-cont">
+            <% files.forEach(function(item,index){ %>
+              <li class="mb10">文件名：<%= item.filename %> 创建时间:<%= fmt(item.ctime) %> <a href="/download/<%= item.filename %>" target="_self">点击下载</a></li>
+            <% }) %>
+        </ul>
+    <% } %>
+	</div>
+    <%- include('./footer')%>
+</body>
+	<script type="text/javascript">
+			function handleClick(source,type) {
+		        window.open('/download/'+source,type);
+		    }
+		    $('.downloads').on('click', function () {
+		    	var source = $(this).attr('data-downloads');
+		        handleClick(source,'_self');
+		    })
+  	</script>
+</html>

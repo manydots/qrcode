@@ -1,5 +1,9 @@
 'use strict';
 
+let fs = require('fs-extra');
+let globby = require('globby');
+let path = require('path');
+let redis = require('./redis');
 /**
  * @desc  函数防抖---“立即执行版本” 和 “非立即执行版本” 的组合版本
  * @param  fn 需要执行的函数
@@ -31,7 +35,8 @@ function debounce(fn, delay, immediate) {
     }
 }
 
-function getClientIp(req, proxyType) {
+function getClientIp(ctx, proxyType) {
+    let req = ctx.req;
     let ip = req.connection.remoteAddress || req.socket.remoteAddress || (req.connection.socket ? req.connection.socket.remoteAddress : null);
     // 如果使用了nginx代理
 
@@ -49,6 +54,11 @@ function getClientIp(req, proxyType) {
     if (ip.indexOf('::ffff:') !== -1) {
         ip = ip.substring(7);
     }
+    
+    redis.addRedis('ip',ip);
+    redis.readRedis('ip',function(ips){
+        console.log(`redis已访问IP:${ips}`);
+    })
     return ip;
 }
 
@@ -56,36 +66,7 @@ function isLocal() {
     var host = window.location.host;
     return host.indexOf('127.0.0.1') > -1 || host.indexOf('localhost') > -1 || host.indexOf('192.168.1.15') > -1;
 }
-const allow = ['/api/login'];
 
-function checkLogin(ctx, temple) {
-    let url = ctx.originalUrl;
-    if (allow.indexOf(url) > -1) {
-        logger.info('当前地址可直接访问')
-    } else {
-        ctx.render('login', {
-            title: '请登录',
-            isConsole: false
-        });
-
-        if (ctx.isAuthenticated()) {
-            //授权
-            if (url === '/') {
-                //ctx.redirect('/projectList')
-
-            }
-            console.log('login status validate success')
-        } else {
-
-            if (!ctx.cookies.get('userToken') || ctx.cookies.get('userToken') == '') {
-                ctx.render('login', {
-                    title: '请登录',
-                    isConsole: false
-                });
-            }
-        }
-    }
-}
 
 function IsURL(strUrl) {
     var strRegex = "^((https|http|ftp|rtsp|mms)?://)" +
@@ -139,7 +120,7 @@ const uploadLimit = {
     size: 1024 * 1024 * 5, //1M*50[1024 * 1024 * 50]
     types: [{
         type: 'application/*',
-        smallType: ['vnd.ms-excel']//'octet-stream' 其他类型文件eg:*.war
+        smallType: ['vnd.ms-excel'] //'octet-stream' 其他类型文件eg:*.war
     }, {
         type: 'image/*',
         smallType: ['jpg', 'jpeg', 'png']
@@ -176,6 +157,7 @@ function uploadFilesCheck(type, size) {
         typeError: typeError
     };
 }
+
 function checkPath(ctx, notNeedDeal) {
     let notNeed = false;
     for (let item of notNeedDeal) {
@@ -198,14 +180,77 @@ function checkPath(ctx, notNeedDeal) {
     }
     return notNeed;
 }
+
+function findSync(startPath, flag) {
+    let result = [];
+    if (!flag) {
+        function finder(paths) {
+            let files = fs.readdirSync(paths);
+            files.forEach((val, index) => {
+                let fPath = path.join(paths, val);
+                let stats = fs.statSync(fPath);
+                if (stats.isDirectory()) {
+                    finder(fPath)
+                };
+                if (stats.isFile()) {
+                    result.push(fPath)
+                };
+            });
+
+        };
+        finder(startPath);
+    } else {
+        //result = fs.readdirSync(startPath);
+        fs.readdirSync(startPath).forEach((val, index) => {
+            //console.log(startPath+'\\'+val)
+            //console.log(fs.statSync(startPath+'\\'+val))
+            result.push({
+                ctime: fs.statSync(startPath + '\\' + val).ctime,
+                filename: val,
+                path: startPath + '\\' + val
+            })
+        });
+    }
+
+    return result;
+};
+
+function formatDate(date, fmt) {
+    if (typeof(date) != 'object') {
+        return date;
+    }
+    date = new Date(date);
+    if (fmt === undefined) {
+        fmt = 'yyyy-MM-dd hh:mm:ss';
+    }
+    var o = {
+        'M+': date.getMonth() + 1, //月份
+        'd+': date.getDate(), //日
+        'h+': date.getHours(), //小时
+        'm+': date.getMinutes(), //分
+        's+': date.getSeconds(), //秒
+        'q+': Math.floor((date.getMonth() + 3) / 3), //季度
+        'S': date.getMilliseconds() //毫秒
+    };
+    if (/(y+)/.test(fmt)) {
+        fmt = fmt.replace(RegExp.$1, (date.getFullYear() + '').substr(4 - RegExp.$1.length))
+    };
+    for (var k in o) {
+        if (new RegExp('(' + k + ')').test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (('00' + o[k]).substr(('' + o[k]).length)));
+    }
+    return fmt;
+
+};
+
 module.exports = {
     debounce: debounce,
     isLocal: isLocal,
     getClientIp: getClientIp,
-    checkLogin: checkLogin,
     IsURL: IsURL,
     Codes: Codes,
     clickOpen: clickOpen,
     uploadFilesCheck: uploadFilesCheck,
-    checkPath:checkPath
+    checkPath: checkPath,
+    findSync: findSync,
+    formatDate: formatDate
 };

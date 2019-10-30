@@ -12,7 +12,12 @@ input:-webkit-autofill {
 .tac {
 	text-align: center;
 }
-
+.w990{
+	width: 990px;
+	margin: 0 auto;
+	clear: both;
+	overflow: hidden;
+}
 .cursor {
 	cursor: pointer;
 }
@@ -26,18 +31,16 @@ input:-webkit-autofill {
 .mr15{
 	margin-right:15px;
 }
+.mb10{
+	margin-bottom: 10px;
+}
 
 .qrcode-top {
 	width: 100%;
 	height: 50px;
 	border-bottom: 1px solid #ececec;
 }
-.w990{
-	width: 990px;
-	margin: 0 auto;
-	clear: both;
-	overflow: hidden;
-}
+
 .qrcode-top .qrcode-top-content{
 	height: 100%;
 	line-height: 50px;
@@ -69,6 +72,21 @@ input:-webkit-autofill {
 	line-height: 25px;
 	padding: 2px 5px;
 	border-bottom: 1px solid #999;
+}
+.qrcode-files-list{
+	overflow: hidden;
+	padding: 20px 0 500px 0;
+}
+.qrcode-files-list .qrcode-files-list-cont{
+	font-size: 13px;
+	color: #666666;
+	line-height: 20px;
+}
+
+.qrcode-files-list .qrcode-files-list-cont a{
+	color: red;
+	display: inline-block;
+	line-height: 20px;
 }
 .qrcode-container {
 	width: 990px;
