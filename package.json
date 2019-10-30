@@ -6,8 +6,8 @@
     "start": "nodemon  ./server.js",
     "watch": "ts-node  ./server.js",
     "server": "node --trace-deprecation ./server.js",
-    "chat:http": "set port=3031 && node --trace-deprecation ./server.js",
-    "chat:linux": "export port=8087 && node --trace-deprecation ./server.js"
+    "server:http": "set port=3031 && node --trace-deprecation ./server.js",
+    "server:linux": "export port=8087 && node --trace-deprecation ./server.js"
   },
   "dependencies": {
     "ejs": "^2.6.1",
@@ -27,10 +27,10 @@
   },
   "keywords": [
     "node",
-    "nginx",
-    "screen",
+    "qrcode",
+    "upload",
     "koa",
-    "koa2"
+    "download"
   ],
   "repository": {
     "type": "git",
