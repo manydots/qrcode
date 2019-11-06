@@ -35,7 +35,7 @@ function debounce(fn, delay, immediate) {
     }
 }
 
-function getClientIp(ctx, proxyType) {
+function getClientIp(ctx, proxyType, useRedis) {
     let req = ctx.req;
     let ip = req.connection.remoteAddress || req.socket.remoteAddress || (req.connection.socket ? req.connection.socket.remoteAddress : null);
     // 如果使用了nginx代理
@@ -54,11 +54,13 @@ function getClientIp(ctx, proxyType) {
     if (ip.indexOf('::ffff:') !== -1) {
         ip = ip.substring(7);
     }
-    
-    redis.addRedis('ip',ip);
-    redis.readRedis('ip',function(ips){
-        console.log(`redis已访问IP:${ips}`);
-    })
+    if (useRedis) {
+        redis.addRedis('ip', ip);
+        redis.readRedis('ip', function(ips) {
+            //console.log(`redis已访问IP:${ips}`);
+        })
+    }
+
     return ip;
 }
 
@@ -183,6 +185,9 @@ function checkPath(ctx, notNeedDeal) {
 
 function findSync(startPath, flag) {
     let result = [];
+    if (!fs.existsSync(startPath)) {
+        fs.mkdirSync(startPath, err => {});
+    }
     if (!flag) {
         function finder(paths) {
             let files = fs.readdirSync(paths);
@@ -200,6 +205,7 @@ function findSync(startPath, flag) {
         };
         finder(startPath);
     } else {
+
         //result = fs.readdirSync(startPath);
         fs.readdirSync(startPath).forEach((val, index) => {
             //console.log(startPath+'\\'+val)
@@ -211,7 +217,6 @@ function findSync(startPath, flag) {
             })
         });
     }
-
     return result;
 };
 

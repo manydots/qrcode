@@ -10,7 +10,6 @@ function initRedis() {
 	});
 };
 
-
 function addRedis(key, value, callback) {
 	if (!client) {
 		initRedis();

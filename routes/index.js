@@ -10,31 +10,43 @@ const canVisit = [{
 	pageType: 'qrcode',
 	title: '二维码生成',
 	source: 'qrcode',
-	isCheck: true
+	isCheck: true,
+	method:'get'
 }, {
 	path: '/qrcode',
 	pageType: 'qrcode',
 	title: '二维码生成',
 	source: 'qrcode',
-	isCheck: true
+	isCheck: true,
+	method:'get'
 }, {
 	path: '/qrGet',
 	pageType: 'qrcode',
 	title: '二维码生成',
 	source: 'qrcode',
-	isCheck: true
+	isCheck: true,
+	method:'get'
 }, {
 	path: '/upload',
 	pageType: 'upload',
 	title: '文件上传',
 	source: 'upload',
-	isCheck: true
+	isCheck: true,
+	method:'get'
 }, {
 	path: '/download',
 	pageType: 'download',
 	title: '下载文件',
 	source: 'download',
-	isCheck: true
+	isCheck: true,
+	method:'get'
+}, {
+	path: '/ts',
+	pageType: 'ts',
+	title: '测试页面',
+	source: 'ts',
+	isCheck: true,
+	method:'get'
 }];
 
 const notNeedDeal = [{
@@ -64,6 +76,16 @@ router.get('/download/:name', async (ctx) => {
 
 router.get('*', async ctx => {
 	let canLoad = true;
+	console.log('上一次访问referer:',ctx.headers.referer);
+	//拒绝无user-agent请求，初步判定为爬虫
+	if(ctx.headers['user-agent'] && ctx.headers['user-agent'] !=''){
+		console.log('当前访问user-agent:',ctx.headers['user-agent']);
+		//console.log(ctx.headers)
+	}else{
+
+		ctx.body = Tools.Codes(-3, 'code_visit_error', '异常访问');
+		return;
+	}
 	if (!Tools.checkPath(ctx, notNeedDeal)) {
 		//需要处理的路由
 		for (let item of canVisit) {
@@ -135,6 +157,10 @@ router.get('*', async ctx => {
 	}
 });
 
+router.post('/qrt', async (ctx, next) => {
+	console.log('qrt')
+	ctx.body = 'test'
+});
 router.post('/qr', async (ctx, next) => {
 	let ip = Tools.getClientIp(ctx, 'nginx');
 	const data = ctx.request.body;
@@ -203,22 +229,30 @@ router.post('/uploads', async (ctx, next) => {
 		console.log(file.path)
 		// 创建可读流
 		const render = fs.createReadStream(file.path);
-		const fileDir = 'public/uploads';
+		//const fileDir = 'public/uploads';
 		const ext = file.name.split('.').pop(); // 获取上传文件扩展名
 		const filename = 'TestUp'; //file.name.split('.').shift()
-		let filePath = fileDir + '/' + filename + '.' + ext;
+		let filePath = sourcePath + '/' + filename + '.' + ext;
+		console.log(sourcePath, filePath)
+		if (!fs.existsSync(sourcePath)) {
+			fs.mkdirSync(sourcePath, err => {
 
-		if (!fs.existsSync(fileDir)) {
-			fs.mkdirSync(fileDir, err => {
-				console.log(err)
-				console.log('创建失败')
+				if (err) {
+					console.log('创建失败')
+					ctx.body = Tools.Codes(-1, 'upload_error', '上传失败');
+					return
+				}
 			});
-			ctx.body = Tools.Codes(-1, 'upload_error', '上传失败');
+
+			let upStream = fs.createWriteStream(filePath);
+			render.pipe(upStream);
+			ctx.body = Tools.Codes(0, 'upload_success', '上传成功');
+
 			return;
 		} else {
 
 			// 创建写入流
-			const upStream = fs.createWriteStream(filePath);
+			let upStream = fs.createWriteStream(filePath);
 			render.pipe(upStream);
 			ctx.body = Tools.Codes(0, 'upload_success', '上传成功');
 			return
